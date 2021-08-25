@@ -2,12 +2,48 @@ version: '3.8'
 
 services:
   db:
-    container_name: tf-fullstack-db
+    container_name: fullstack-tf-db
     image: postgres:13-alpine
     environment:
-      # The postgres image automatically uses these variables to create the database and user
       - POSTGRES_DB=mydb
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
     ports:
       - 5555:5432
+
+  migrate:
+    container_name: fullstack-tf-migrate
+    build:
+      context: ./api
+    environment:
+      - SQLALCHEMY_URL=postgresql://user:password@db:5432/mydb
+    entrypoint: ["alembic", "upgrade", "head"]
+
+  api:
+    container_name: fullstack-tf-api
+    build:
+      context: ./api
+    environment:
+      - SQLALCHEMY_URL=postgresql://user:password@db:5432/mydb
+    command: ["--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - 8000:8000
+
+  task:
+    container_name: fullstack-tf-api
+    container_name: fullstack-tf-task
+    build:
+      context: ./task
+    environment:
+      - SQLALCHEMY_URL=postgresql://user:password@db:5432/mydb
+
+  web:
+    container_name: fullstack-tf-api
+    container_name: fullstack-tf-web
+    build:
+      context: ./web
+    environment:
+      - API_URL=http://api:8000
+    command: ["--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - 8001:8001

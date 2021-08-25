@@ -1,6 +1,4 @@
 #!/bin/bash
-export SQLALCHEMY_URL="postgresql://user:password@localhost:5555/mydb"
-
 while :
 do
     python3 main.py
