@@ -1,4 +1,8 @@
 #!/bin/bash
 export SQLALCHEMY_URL="postgresql://user:password@localhost:5555/mydb"
 
-uvicorn --port 8000 main:app
+while :
+do
+    python3 main.py
+    sleep 5
+done
