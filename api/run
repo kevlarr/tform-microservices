@@ -1,3 +1,4 @@
 #!/bin/bash
+export SQLALCHEMY_URL="postgresql://user:password@localhost:5555/mydb"
 
-uvicorn server:app
+uvicorn --port 8000 server:app
