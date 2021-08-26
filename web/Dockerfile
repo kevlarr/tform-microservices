@@ -8,4 +8,4 @@ RUN pip install \
 WORKDIR /app
 COPY main.py .
 
-ENTRYPOINT ["uvicorn", "main:app"]
+ENTRYPOINT ["python", "main.py"]

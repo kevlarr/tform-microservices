@@ -11,4 +11,4 @@ WORKDIR /app
 COPY main.py alembic.ini ./
 COPY alembic/ ./alembic/
 
-ENTRYPOINT ["uvicorn", "main:app"]
+ENTRYPOINT ["python", "main.py"]

@@ -4,5 +4,5 @@ docker-compose down
 docker-compose build
 docker-compose up -d db
 docker-compose up migrate
-docker-compose up -d api task web
+docker-compose up -d api web task
 docker-compose logs --follow
