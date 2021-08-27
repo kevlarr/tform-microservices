@@ -14,14 +14,31 @@ provider "google" {
 
   project = var.project
   region  = var.region
-  zone    = var.zone
 }
 
 # Enable Cloud Run API
 resource "google_project_service" "run_api" {
+  project = var.project
   service = "run.googleapis.com"
 
   disable_on_destroy = true
+}
+
+resource "google_project_service" "vpcaccess_api" {
+  project = var.project
+  service = "vpcaccess.googleapis.com"
+
+  disable_on_destroy = true
+}
+
+resource "google_vpc_access_connector" "connector" {
+  name = "fullstack-tf-vpc-con"
+  ip_cidr_range = "10.8.0.0/28"
+  network = "default"
+
+  depends_on = [
+    google_project_service.vpcaccess_api
+  ]
 }
 
 resource "google_cloud_run_service" "api" {
@@ -44,6 +61,16 @@ resource "google_cloud_run_service" "api" {
         }
       }
     }
+
+    metadata {
+      annotations = {
+        "run.googleapis.com/vpc-access-connector" = "fullstack-tf-vpc-con"
+
+        # Not ACTUALLY positive these are needed; the VPC connector might be the only necessary part
+        "run.googleapis.com/cloudsql-instances" = var.cloud_sql_name
+        "run.googleapis.com/client-name"        = "cloud-console"
+      }
+    }
   }
 
   traffic {
@@ -52,7 +79,9 @@ resource "google_cloud_run_service" "api" {
   }
 
   depends_on = [
-    google_project_service.run_api
+    google_project_service.run_api,
+    google_project_service.vpcaccess_api,
+    google_vpc_access_connector.connector,
   ]
 }
 
