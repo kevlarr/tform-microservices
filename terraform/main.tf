@@ -65,10 +65,6 @@ resource "google_cloud_run_service" "api" {
     metadata {
       annotations = {
         "run.googleapis.com/vpc-access-connector" = "fullstack-tf-vpc-con"
-
-        # Not ACTUALLY positive these are needed; the VPC connector might be the only necessary part
-        "run.googleapis.com/cloudsql-instances" = var.cloud_sql_name
-        "run.googleapis.com/client-name"        = "cloud-console"
       }
     }
   }
