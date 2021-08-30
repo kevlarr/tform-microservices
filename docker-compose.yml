@@ -30,14 +30,6 @@ services:
     ports:
       - 8000:8000
 
-  task:
-    container_name: fullstack-tf-api
-    container_name: fullstack-tf-task
-    build:
-      context: ./task
-    environment:
-      - SQLALCHEMY_URL=postgresql://user:password@db:5432/mydb
-
   web:
     container_name: fullstack-tf-api
     container_name: fullstack-tf-web

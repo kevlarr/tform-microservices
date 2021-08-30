@@ -2,6 +2,7 @@ from datetime import datetime
 from os import environ
 
 from fastapi import FastAPI
+from fastapi_utils.tasks import repeat_every
 from sqlalchemy import create_engine, Column, DateTime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoResultFound
@@ -13,6 +14,37 @@ PORT = int(environ.get("PORT", "8000"))
 
 
 APP = FastAPI()
+N_BACKGROUND = 0
+
+
+ENGINE = create_engine(environ.get("SQLALCHEMY_URL"))
+
+ModelBase = declarative_base(bind=ENGINE)
+Session = sessionmaker(bind=ENGINE)
+
+class SingleThing(ModelBase):
+  __tablename__ = "singlething"
+  updated_at = Column(DateTime, primary_key=True)
+
+
+@APP.on_event("startup")
+@repeat_every(seconds=5)
+async def refresh_model():
+    global N_BACKGROUND
+    N_BACKGROUND += 1
+
+    with Session() as session:
+        result = session.query(SingleThing).one_or_none()
+
+        if not result:
+            print("No record found")
+            return
+
+        last_updated, result.updated_at = result.updated_at, datetime.utcnow()
+        session.commit()
+
+        print(f"Updated from {last_updated} to {result.updated_at}")
+
 
 
 @APP.get("/")
@@ -22,15 +54,6 @@ async def root():
 
 @APP.get("/thing")
 async def thing():
-    engine = create_engine(environ.get("SQLALCHEMY_URL"))
-
-    ModelBase = declarative_base(bind=engine)
-    Session = sessionmaker(bind=engine)
-
-    class SingleThing(ModelBase):
-      __tablename__ = "singlething"
-      updated_at = Column(DateTime, primary_key=True)
-
     with Session() as session:
         try:
             result = session.query(SingleThing).one()
@@ -39,7 +62,10 @@ async def thing():
             session.add(result)
             session.commit()
 
-        return {"updated_at": result.updated_at}
+        return {
+            "updated_at": result.updated_at,
+            "n_background": N_BACKGROUND,
+        }
 
 
 def main():
