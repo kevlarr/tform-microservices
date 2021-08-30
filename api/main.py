@@ -9,9 +9,9 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 import uvicorn
 
+
 HOST = environ.get("HOST", "127.0.0.1")
 PORT = int(environ.get("PORT", "8000"))
-
 
 APP = FastAPI()
 N_BACKGROUND = 0
@@ -37,14 +37,10 @@ async def refresh_model():
         result = session.query(SingleThing).one_or_none()
 
         if not result:
-            print("No record found")
             return
 
         last_updated, result.updated_at = result.updated_at, datetime.utcnow()
         session.commit()
-
-        print(f"Updated from {last_updated} to {result.updated_at}")
-
 
 
 @APP.get("/")

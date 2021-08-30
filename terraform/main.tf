@@ -32,9 +32,9 @@ resource "google_project_service" "vpcaccess_api" {
 }
 
 resource "google_vpc_access_connector" "connector" {
-  name = "fullstack-tf-vpc-con"
+  name          = "fullstack-tf-vpc-con"
   ip_cidr_range = "10.8.0.0/28"
-  network = "default"
+  network       = "default"
 
   depends_on = [
     google_project_service.vpcaccess_api
@@ -48,7 +48,7 @@ resource "google_cloud_run_service" "api" {
   template {
     spec {
       containers {
-        image = "gcr.io/${var.project}/fullstack_api:latest"
+        image = "gcr.io/${var.project}/fullstack_api:${var.docker_tag}"
 
         env {
           name  = "HOST"
@@ -81,6 +81,21 @@ resource "google_cloud_run_service" "api" {
   ]
 }
 
+resource "google_cloud_scheduler_job" "updater" {
+  name        = "fullstack-tf-api-ping"
+  description = "Pings the API every minute to try to keep the container active so background tasks can run"
+  schedule    = "* * * * *"
+
+  http_target {
+    http_method = "GET"
+    uri         = google_cloud_run_service.api.status[0].url
+  }
+
+  depends_on = [
+    google_cloud_run_service.api,
+  ]
+}
+
 resource "google_cloud_run_service" "web" {
   name     = "fullstack-tf-web"
   location = var.region
@@ -88,7 +103,7 @@ resource "google_cloud_run_service" "web" {
   template {
     spec {
       containers {
-        image = "gcr.io/${var.project}/fullstack_web:latest"
+        image = "gcr.io/${var.project}/fullstack_web:${var.docker_tag}"
 
         env {
           name  = "HOST"
