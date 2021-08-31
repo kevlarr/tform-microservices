@@ -1,8 +1,7 @@
-Sample repo including 3 services...
+Sample repo including 2 services...
 
-- A **front-end** server
-- An API
-- A scheduled background task
+- A **front-end** server that calls an API for some message
+- An **API** that interacts with database and spawns a periodic background task to update records
 
 ... that are containerized for local development and shippable to GCP, including...
 
