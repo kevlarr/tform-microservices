@@ -47,12 +47,10 @@ Populate a `terraform/terraform.tfvars` file with the following variables:
 ```yaml
 project          = "<project-id>"
 credentials_file = "<path-to-JSON-file>"
-database_url     = "postgresql://<user>:<password>@<host>:<port>/<dbname>"
+database_username = "<generic username>"
+database_password = "<some random password>"
+docker_tag = "<tag for the images shipped to GCR>"
 ```
-
-**Note:** If connecting to a Cloud SQL instance, you *must* make sure to be using the **private IP and default VPC**;
-even using a public IP address, Cloud Run containers can't seem to access it.
-They rely on having "VPC connectors" that provide access to the default VPC (and, thus, the private IP address).
 
 With those variables supplied, now just run:
 
@@ -60,3 +58,11 @@ With those variables supplied, now just run:
 cd terraform
 terraform apply
 ```
+
+Ignoring the connective tissue, this creates:
+
+- A VPC
+- Cloud SQL database
+- Cloud Run API that contacts the database
+- Cloud Run front-end server that contacts the API
+- Cloud Scheduler task to ping API every minute (to keep it un-idled as much as possible)

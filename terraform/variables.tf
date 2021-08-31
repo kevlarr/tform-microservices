@@ -2,7 +2,9 @@ variable "project" {}
 
 variable "credentials_file" {}
 
-variable "database_url" {}
+variable "database_username" {}
+
+variable "database_password" {}
 
 variable "docker_tag" {}
 
