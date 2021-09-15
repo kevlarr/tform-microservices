@@ -1,0 +1,27 @@
+name: Docker-GCR
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # https://github.community/t/how-to-get-just-the-tag-name/16241/32
+      - name: Get version tag
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
+      - name: Setup gcloud
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure docker for GCP
+        run: gcloud auth configure-docker
+
+      - name: Build docker image
+        run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
