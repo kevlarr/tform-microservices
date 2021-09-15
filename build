@@ -10,6 +10,8 @@ if [[ -z "$IMAGE_TAG" ]]; then
   exit 1
 fi
 
+set -e
+
 for service in api web
 do
   tagged=$service:$IMAGE_TAG
