@@ -10,14 +10,14 @@ if [[ -z "$IMAGE_TAG" ]]; then
   exit 1
 fi
 
-for service in cms
+for service in api web
 do
   tagged=$service:$IMAGE_TAG
 
   echo
   echo "***** Building "$tagged' *****'
   echo
-  docker build -t $tagged -f docker/deploy/$service/Dockerfile .
+  docker build -t $tagged -f $service/Dockerfile .
   gcr_tagged=gcr.io/$GCR_PROJECT_ID/$tagged
 
   echo
