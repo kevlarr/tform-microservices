@@ -26,5 +26,8 @@ jobs:
       - name: Configure docker for GCP
         run: gcloud auth configure-docker
 
+      - name: Ls
+        run: ls -lR
+
       - name: Build docker image
         run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
