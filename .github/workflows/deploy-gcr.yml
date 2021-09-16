@@ -21,6 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Echo
+        run: echo "${{ needs.tag.value }}"
+
       - name: Build docker image
         #run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
         run: docker build -t api:${{ needs.tag.value }} -f api/Dockerfile ./api
