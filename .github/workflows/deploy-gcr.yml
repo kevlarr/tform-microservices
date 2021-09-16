@@ -28,6 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - tag
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [api, web]
     steps:
       - uses: actions/checkout@v2
 
@@ -36,7 +40,7 @@ jobs:
 
       - name: Build docker image
         #run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
-        run: docker build -t api:${{ needs.tag.outputs.value }} -f api/Dockerfile ./api
+        run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@master
@@ -49,8 +53,9 @@ jobs:
         run: gcloud auth configure-docker
 
       - name: Set tagged
-        run: echo "tagged=api:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
+        run: echo "tagged=${{ matrix.app }}:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
 
+      # Not sure how to set multiple env vars in a single step when one is based off of another
       - name: Set retagged
         run: echo "retagged=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.tagged }}" >> $GITHUB_ENV
 
