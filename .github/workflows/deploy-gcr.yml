@@ -6,28 +6,49 @@ on:
     branches:
       - master
 jobs:
-  build:
+  tag:
     runs-on: ubuntu-latest
+    steps:
+      - name: Docker image tag
+        # https://github.community/t/how-to-get-just-the-tag-name/16241/32
+        #run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        run: echo "::set-output name=value::latest"
+
+  build-api-image:
+    runs-on: ubuntu-latest
+    needs:
+      - tag
     steps:
       - uses: actions/checkout@v2
 
-      # https://github.community/t/how-to-get-just-the-tag-name/16241/32
-      - name: Get version tag
-        #run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-        run: echo "TAG=latest" >> $GITHUB_ENV
+      - name: Build docker image
+        #run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
+        run: docker build -t api:${{ needs.tag.value }} -f api/Dockerfile ./api
 
-      - name: Setup gcloud
+  push-api-image:
+    runs-on: ubuntu-latest
+    needs:
+      - tag
+      - build-api-image
+    steps:
+      - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@master
         with:
           version: '290.0.1'
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Configure docker for GCP
+      - name: Auth docker for gcloud
         run: gcloud auth configure-docker
 
-      - name: Ls
-        run: ls -lR
+      - name: Set image name
+        run: echo "TAGGED=api:${{ needs.tag.value }}" >> $GITHUB_ENV
 
-      - name: Build docker image
-        run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
+      - name: Set retag name
+        run: echo "RETAGGED=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.TAGGED }}" >> $GITHUB_ENV
+
+      - name: Retag image
+        run: docker tag ${{ env.TAGGED }} ${{ env.RETAGGED }}
+
+      - name: Push image
+        run: docker push ${{ env.RETAGGED }}
