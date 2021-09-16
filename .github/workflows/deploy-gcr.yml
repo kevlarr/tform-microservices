@@ -48,14 +48,14 @@ jobs:
       - name: Auth docker for gcloud
         run: gcloud auth configure-docker
 
-      - name: Set vars
-        run: |
-          echo "TAGGED=api:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
-          echo ${{ env }}
-          echo "RETAGGED=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.TAGGED }}" >> $GITHUB_ENV
+      - name: Set tagged
+        run: echo "tagged=api:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
+
+      - name: Set retagged
+        run: echo "retagged=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.tagged }}" >> $GITHUB_ENV
 
       - name: Retag image
-        run: docker tag ${{ env.TAGGED }} ${{ env.RETAGGED }}
+        run: docker tag ${{ env.tagged }} ${{ env.retagged }}
 
       - name: Push image
-        run: docker push ${{ env.RETAGGED }}
+        run: docker push ${{ env.retagged }}
