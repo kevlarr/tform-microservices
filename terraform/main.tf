@@ -144,7 +144,7 @@ resource "google_cloud_run_service" "api" {
   template {
     spec {
       containers {
-        image = "gcr.io/${var.project}/fullstack_api:${var.docker_tag}"
+        image = "gcr.io/${var.project}/api:${var.docker_tag}"
 
         env {
           name  = "HOST"
@@ -188,7 +188,7 @@ resource "google_cloud_run_service" "web" {
   template {
     spec {
       containers {
-        image = "gcr.io/${var.project}/fullstack_web:${var.docker_tag}"
+        image = "gcr.io/${var.project}/web:${var.docker_tag}"
 
         env {
           name  = "HOST"
