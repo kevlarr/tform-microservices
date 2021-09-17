@@ -6,6 +6,17 @@ on:
     branches:
       - master
 jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show
+        run: |
+          echo "GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}"
+          echo "GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
+          echo "GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}"
+          echo "DATABASE_USER: ${{ secrets.DATABASE_USER }}"
+          echo "DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}"
+
   tag:
     runs-on: ubuntu-latest
     outputs:
@@ -46,7 +57,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@master
         with:
           version: '290.0.1'
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Base64 encoded..?
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Auth docker for gcloud
@@ -70,6 +81,9 @@ jobs:
     needs:
       - tag
       - build
+    defaults:
+      run:
+        working-directory: terraform
     steps:
       - uses: actions/checkout@v2
 
@@ -84,4 +98,10 @@ jobs:
         run: terraform init -backend-config="bucket=${{ secrets.TERRAFORM_BACKEND_BUCKET }}"
 
       - name: Apply terraform
+        env:
+          TF_VAR_project: ${{ secrets.GCP_PROJECT_ID }}
+          TF_VAR_credentials_file: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          TF_VAR_database_username: ${{ secrets.DATABASE_USER }}
+          TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
+          TF_VAR_docker_tag: ${{ needs.tag.outputs.value }}
         run: terraform apply -auto-approve
