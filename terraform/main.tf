@@ -224,20 +224,20 @@ resource "google_cloud_run_service" "web" {
 ## otherwise-inactive container up 75% - 95% of the time, which is enough for the
 ## small amount of background work we need to perform.
 ##
-resource "google_cloud_scheduler_job" "updater" {
-  name        = "fullstack-tf-api-ping"
-  description = "Pings the API every minute to try to keep the container active so background tasks can run"
-  schedule    = "* * * * *"
+#resource "google_cloud_scheduler_job" "updater" {
+  #name        = "fullstack-tf-api-ping"
+  #description = "Pings the API every minute to try to keep the container active so background tasks can run"
+  #schedule    = "* * * * *"
 
-  http_target {
-    http_method = "GET"
-    uri         = google_cloud_run_service.api.status[0].url
-  }
+  #http_target {
+    #http_method = "GET"
+    #uri         = google_cloud_run_service.api.status[0].url
+  #}
 
-  depends_on = [
-    google_cloud_run_service.api,
-  ]
-}
+  #depends_on = [
+    #google_cloud_run_service.api,
+  #]
+#}
 
 ##
 ## Cloud Run by default can't be executed by anybody, so either
