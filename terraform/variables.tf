@@ -1,6 +1,6 @@
 variable "project" {}
 
-variable "credentials_file" {}
+variable "credentials" {}
 
 variable "database_username" {}
 

@@ -100,7 +100,7 @@ jobs:
       - name: Apply terraform
         env:
           TF_VAR_project: ${{ secrets.GCP_PROJECT_ID }}
-          TF_VAR_credentials_file: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          TF_VAR_credentials: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           TF_VAR_database_username: ${{ secrets.DATABASE_USER }}
           TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
           TF_VAR_docker_tag: ${{ needs.tag.outputs.value }}
