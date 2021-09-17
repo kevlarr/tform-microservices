@@ -84,6 +84,8 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v2
 
@@ -93,8 +95,6 @@ jobs:
           cli_config_credentials_token: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Init backend
-        env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT }}
         run: terraform init -backend-config="bucket=${{ secrets.TERRAFORM_BACKEND_BUCKET }}"
 
       - name: Apply terraform
