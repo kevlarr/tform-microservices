@@ -41,12 +41,20 @@ resource "google_project_service" "run_api" {
   service = "run.googleapis.com"
 
   disable_on_destroy = true
+
+  depends_on = [
+    google_project_service.resource_manager_api
+  ]
 }
 resource "google_project_service" "vpcaccess_api" {
   project = var.project
   service = "vpcaccess.googleapis.com"
 
   disable_on_destroy = true
+
+  depends_on = [
+    google_project_service.resource_manager_api
+  ]
 }
 
 ##
