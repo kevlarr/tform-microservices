@@ -6,70 +6,70 @@ on:
     branches:
       - master
 jobs:
-  #tag:
-    #runs-on: ubuntu-latest
-    #outputs:
-      #value: ${{ steps.docker-image-tag.outputs.value }}
-    #steps:
-      #- uses: actions/checkout@v2
+  tag:
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.docker-image-tag.outputs.value }}
+    steps:
+      - uses: actions/checkout@v2
 
-      #- id: docker-image-tag
-        #name: Extract image tag
-        ## TODO Should this support push to `master` OR tag creation?
-        ## https://github.community/t/how-to-get-just-the-tag-name/16241/32
-        ##run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-        ##run: echo "::set-output name=value::$( git rev-parse --short HEAD )"
+      - id: docker-image-tag
+        name: Extract image tag
+        # TODO Should this support push to `master` OR tag creation?
+        # https://github.community/t/how-to-get-just-the-tag-name/16241/32
+        #run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        run: echo "::set-output name=value::$( git rev-parse --short HEAD )"
         #run: |
           #short_sha=$( git rev-parse --short HEAD )
           #echo "$short_sha"
           #echo "::set-output name=value::$short_sha"
 
-  #build:
-    #runs-on: ubuntu-latest
-    #needs:
-      #- tag
-    #strategy:
-      #fail-fast: true
-      #matrix:
-        #app: [api, web]
-    #steps:
-      #- uses: actions/checkout@v2
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - tag
+    strategy:
+      fail-fast: true
+      matrix:
+        app: [api, web]
+    steps:
+      - uses: actions/checkout@v2
 
-      #- name: Echo
-        #run: echo ${{ needs.tag.outputs.value }}
+      - name: Echo
+        run: echo ${{ needs.tag.outputs.value }}
 
-      #- name: Build docker image
-        ##run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
-        #run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
+      - name: Build docker image
+        #run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
+        run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
 
-      #- name: Set up gcloud
-        #uses: google-github-actions/setup-gcloud@master
-        #with:
-          #version: '290.0.1'
-          #service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Base64 encoded..?
-          #project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Base64 encoded..?
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      #- name: Auth docker for gcloud
-        #run: gcloud auth configure-docker
+      - name: Auth docker for gcloud
+        run: gcloud auth configure-docker
 
-      #- name: Set tagged
-        #run: echo "tagged=${{ matrix.app }}:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
+      - name: Set tagged
+        run: echo "tagged=${{ matrix.app }}:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
 
-      ## Not sure how to set multiple env vars in a single step when one is based off of another
-      #- name: Set retagged
-        #run: echo "retagged=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.tagged }}" >> $GITHUB_ENV
+      # Not sure how to set multiple env vars in a single step when one is based off of another
+      - name: Set retagged
+        run: echo "retagged=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.tagged }}" >> $GITHUB_ENV
 
-      #- name: Retag image
-        #run: docker tag ${{ env.tagged }} ${{ env.retagged }}
+      - name: Retag image
+        run: docker tag ${{ env.tagged }} ${{ env.retagged }}
 
-      #- name: Push image
-        #run: docker push ${{ env.retagged }}
+      - name: Push image
+        run: docker push ${{ env.retagged }}
 
   terraform:
     runs-on: ubuntu-latest
-    #needs:
-      #- tag
-      #- build
+    needs:
+      - tag
+      - build
     defaults:
       run:
         working-directory: terraform
@@ -92,6 +92,6 @@ jobs:
           TF_VAR_credentials: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           TF_VAR_database_username: ${{ secrets.DATABASE_USER }}
           TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
-          #TF_VAR_docker_tag: ${{ needs.tag.outputs.value }}
-          TF_VAR_docker_tag: 66fc028
+          TF_VAR_docker_tag: ${{ needs.tag.outputs.value }}
+          #TF_VAR_docker_tag: 66fc028
         run: terraform apply -auto-approve
