@@ -1,6 +1,10 @@
 terraform {
   required_version = ">= 0.14"
 
+  backend "gcs" {
+    prefix = "terraform/fullstacktf"
+  }
+
   required_providers {
     google = {
       source  = "hashicorp/google"
