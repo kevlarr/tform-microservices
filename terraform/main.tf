@@ -22,6 +22,20 @@ provider "google" {
 ##
 ## Specific APIs need to be enabled prior to creating any services
 ##
+
+resource "google_project_service" "resource_manager_api" {
+  project = var.project
+  service = "cloudresourcemanager.googleapis.com"
+
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "compute_api" {
+  project = var.project
+  service = "compute.googleapis.com"
+
+  disable_on_destroy = true
+}
 resource "google_project_service" "run_api" {
   project = var.project
   service = "run.googleapis.com"
