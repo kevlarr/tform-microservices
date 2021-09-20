@@ -61,7 +61,7 @@ jobs:
             #--cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new"
             #./${{ matrix.app }}
         run: |
-          docker buildx build -t ${{ env.image_tag }} -f ${{ matrix.app }}/Dockerfile --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}" --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new" ./${{ matrix.app }}
+          docker buildx build -t ${{ env.image_tag }} -f ${{ matrix.app }}/Dockerfile --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}" --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new" --load ./${{ matrix.app }}
           docker images
 
       - name: Images
