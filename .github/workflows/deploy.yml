@@ -47,13 +47,14 @@ jobs:
 
       - name: Build docker image
         #run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
-        run: >-
-          docker buildx build
-            -t ${{ matrix.app }}:${{ needs.tag.outputs.value }}
-            -f ${{ matrix.app }}/Dockerfile
-            --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}"
-            --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new"
-            ./${{ matrix.app }}
+        #run: >-
+          #docker buildx build
+            #-t ${{ matrix.app }}:${{ needs.tag.outputs.value }}
+            #-f ${{ matrix.app }}/Dockerfile
+            #--cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}"
+            #--cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new"
+            #./${{ matrix.app }}
+        run: docker buildx build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}" --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new" ./${{ matrix.app }}
 
       - name: Ls
         run: ls -lath /tmp
