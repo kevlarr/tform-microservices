@@ -35,18 +35,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Echo
-        run: echo ${{ needs.tag.outputs.value }}
+      - name: Cache layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache-${{ matrix.app }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Build docker image
-        #run: GCR_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} IMAGE_TAG=${{ env.TAG }} ./build
         run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
+
+      - name: Move Docker cache
+        run: |
+          rm -rf /tmp/.buildx-cache-*
+          mv /tmp/.new-buildx-cache-${{ matrix.app }} /tmp/.buildx-cache-${{ matrix.app }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@master
         with:
           version: '290.0.1'
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Base64 encoded..?
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Base64 encoded..? I forget why there are different keys
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Auth docker for gcloud
@@ -93,5 +102,4 @@ jobs:
           TF_VAR_database_username: ${{ secrets.DATABASE_USER }}
           TF_VAR_database_password: ${{ secrets.DATABASE_PASSWORD }}
           TF_VAR_docker_tag: ${{ needs.tag.outputs.value }}
-          #TF_VAR_docker_tag: 66fc028
         run: terraform apply -auto-approve
