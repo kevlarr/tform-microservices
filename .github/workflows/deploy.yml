@@ -48,6 +48,9 @@ jobs:
       - name: Enable buildx
         run: docker buildx use app-builder || docker buildx create --name app-builder --use
 
+      - name: Set tag
+        run: echo "image_tag=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.app }}:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
+
       - name: Build docker image
         #run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
         #run: >-
@@ -57,7 +60,7 @@ jobs:
             #--cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}"
             #--cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new"
             #./${{ matrix.app }}
-        run: docker buildx build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}" --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new" ./${{ matrix.app }}
+        run: docker buildx build -t ${{ env.image_tag }} -f ${{ matrix.app }}/Dockerfile --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}" --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new" ./${{ matrix.app }}
 
       - name: Ls
         run: ls -lath /tmp
@@ -77,18 +80,8 @@ jobs:
       - name: Auth docker for gcloud
         run: gcloud auth configure-docker
 
-      - name: Set tagged
-        run: echo "tagged=${{ matrix.app }}:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
-
-      # Not sure how to set multiple env vars in a single step when one is based off of another
-      - name: Set retagged
-        run: echo "retagged=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.tagged }}" >> $GITHUB_ENV
-
-      - name: Retag image
-        run: docker tag ${{ env.tagged }} ${{ env.retagged }}
-
       - name: Push image
-        run: docker push ${{ env.retagged }}
+        run: docker push ${{ env.image_tag }}
 
   terraform:
     runs-on: ubuntu-latest
