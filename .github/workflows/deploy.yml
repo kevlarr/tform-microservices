@@ -45,6 +45,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Enable buildx
+        run: docker buildx use app-builder || docker buildx create --name app-builder --use
+
       - name: Build docker image
         #run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
         #run: >-
