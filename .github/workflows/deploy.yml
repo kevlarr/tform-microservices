@@ -64,7 +64,7 @@ jobs:
 
       - name: Move Docker cache
         run: |
-          rm -rf /tmp/.buildx-cache-*
+          rm -rf /tmp/.buildx-cache-${{ matrix.app }}
           mv /tmp/.buildx-cache-${{ matrix.app }}-new /tmp/.buildx-cache-${{ matrix.app }}
 
       - name: Set up gcloud
