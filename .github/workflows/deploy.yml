@@ -32,6 +32,8 @@ jobs:
       fail-fast: true
       matrix:
         app: [api, web]
+    env:
+      EXTERNAL_CACHE: 1
     steps:
       - uses: actions/checkout@v2
 
