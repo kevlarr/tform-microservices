@@ -46,6 +46,9 @@ jobs:
       - name: Build docker image
         run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
 
+      - name: Ls
+        run: ls -lath /tmp
+
       - name: Move Docker cache
         run: |
           rm -rf /tmp/.buildx-cache-*
