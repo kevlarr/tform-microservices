@@ -19,10 +19,6 @@ jobs:
         # https://github.community/t/how-to-get-just-the-tag-name/16241/32
         #run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
         run: echo "::set-output name=value::$( git rev-parse --short HEAD )"
-        #run: |
-          #short_sha=$( git rev-parse --short HEAD )
-          #echo "$short_sha"
-          #echo "::set-output name=value::$short_sha"
 
   build:
     runs-on: ubuntu-latest
@@ -32,8 +28,6 @@ jobs:
       fail-fast: true
       matrix:
         app: [api, web]
-    #env:
-      #EXTERNAL_CACHE: 1
     steps:
       - uses: actions/checkout@v2
 
@@ -52,20 +46,15 @@ jobs:
         run: echo "image_tag=gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.app }}:${{ needs.tag.outputs.value }}" >> $GITHUB_ENV
 
       - name: Build docker image
-        #run: docker build -t ${{ matrix.app }}:${{ needs.tag.outputs.value }} -f ${{ matrix.app }}/Dockerfile ./${{ matrix.app }}
-        #run: >-
-          #docker buildx build
-            #-t ${{ matrix.app }}:${{ needs.tag.outputs.value }}
-            #-f ${{ matrix.app }}/Dockerfile
-            #--cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}"
-            #--cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new"
-            #./${{ matrix.app }}
-        run: |
-          docker buildx build -t ${{ env.image_tag }} -f ${{ matrix.app }}/Dockerfile --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}" --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new" --load ./${{ matrix.app }}
-          docker images
-
-      - name: Images
-        run: docker images
+        # Note: Because of how `>` works in YML, lines have to all have the same indentation to be folded with spaces instead of newlines
+        run: >
+          docker buildx build
+          -t ${{ env.image_tag }}
+          -f ${{ matrix.app }}/Dockerfile
+          --cache-from "type=local,src=/tmp/.buildx-cache-${{ matrix.app }}"
+          --cache-to "type=local,dest=/tmp/.buildx-cache-${{ matrix.app }}-new"
+          --load
+          ./${{ matrix.app }}
 
       - name: Move Docker cache
         run: |
